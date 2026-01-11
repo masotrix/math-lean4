@@ -1,0 +1,28 @@
+# --- Artefactos de compilación de Lake ---
+# Esta carpeta contiene las dependencias descargadas y los archivos compilados
+.lake/
+
+# --- Archivos temporales de Lean ---
+# Aunque suelen estar dentro de .lake/, es buena práctica ignorarlos globalmente
+*.olean
+*.ilean
+*.c
+
+# --- Configuración de Editores ---
+# VS Code (Recomendado mantener settings.json si el equipo comparte config)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+放.dir-locals.el
+
+# --- Otros ---
+.DS_Store
+*.swp

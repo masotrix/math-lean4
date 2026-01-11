@@ -1,0 +1,15 @@
+name = "analysis1"
+version = "0.1.0"
+#defaultTargets = ["Nt"]
+defaultTargets = ["St"]
+
+#[[lean_lib]]
+#name = "Nt"
+
+[[lean_lib]]
+name = "St"
+
+
+#[[lean_exe]]
+#name = "analysis1"
+#root = "Main"
