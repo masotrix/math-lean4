@@ -1,97 +1,103 @@
 import St.Membership
 
 
-/- Subset definition -/
+/- St.subset definition -/
 
 
-axiom subset : St → St → Prop
+axiom St.subset : St → St → Prop
 
 
-/- Subset axioms & definitions -/
+/- St.subset axioms & definitions -/
 
 
-axiom mem_subset (A B : St) :
-    subset A B ↔ ∀ x : St, mem x A → mem x B
+axiom St.mem_subset (A B : St) :
+    St.subset A B ↔ ∀ x : St, St.mem x A → St.mem x B
 
-def subset_prop (A B : St) : Prop :=
-    subset A B ∧ ((A =st B) → False)
-
-
-/- Subset props -/
+def St.subset_prop (A B : St) : Prop :=
+    St.subset A B ∧ ((A =st B) → False)
 
 
-theorem subset_trans (A B C : St) :
-    subset A B → subset B C → subset A C := by
+/- St.subset props -/
 
-    rw [mem_subset A B]
-    rw [mem_subset B C]
-    rw [mem_subset A C]
+theorem St.subset_rfl (A : St) :
+    St.subset A A := by
+
+    rw [St.mem_subset A A]
+    intro x hxmemA
+    exact hxmemA
+
+theorem St.subset_trans (A B C : St) :
+    St.subset A B → St.subset B C → St.subset A C := by
+
+    rw [St.mem_subset A B]
+    rw [St.mem_subset B C]
+    rw [St.mem_subset A C]
     intro hAB hBC x hxmemA
     apply (hBC x)
     apply (hAB x)
     exact hxmemA
 
 
-theorem subset_antisymm (A B : St) :
-    subset A B → subset B A → A =st B := by
+theorem St.subset_antisymm (A B : St) :
+    St.subset A B → St.subset B A → A =st B := by
 
-    rw [mem_subset A B]
-    rw [mem_subset B A]
+    rw [St.mem_subset A B]
+    rw [St.mem_subset B A]
     intro hAB hBA
-    apply (set_eq A B).mp
+    apply (St.ext A B).mp
     intro x
 
     constructor
-    · /- mem x A -> mem x B -/
+    · /- St.mem x A -> St.mem x B -/
       intro hA
       apply (hAB x)
       exact hA
-    · /- mem x B -> mem x A -/
+    · /- St.mem x B -> St.mem x A -/
       intro hB
       apply (hBA x)
       exact hB
 
 
-theorem subset_prop_trans (A B C : St) :
-    subset_prop A B → subset_prop B C → subset_prop A C := by
+theorem St.subset_prop_trans (A B C : St) :
+    St.subset_prop A B → St.subset_prop B C → St.subset_prop A C := by
 
-    unfold subset_prop
+    unfold St.subset_prop
     intro hAB hBC
     obtain ⟨hAB, hneAB⟩ := hAB
     obtain ⟨hBC, hneBC⟩ := hBC
 
     constructor
-    · /- subset A C -/
-      exact (subset_trans A B C hAB hBC)
+    · /- St.subset A C -/
+      exact (St.subset_trans A B C hAB hBC)
 
     · /- A = C -> False -/
 
-      rw [mem_subset A B] at hAB
-      rw [mem_subset B C] at hBC
+      rw [St.mem_subset A B] at hAB
+      rw [St.mem_subset B C] at hBC
 
       intro heqAC
       apply hneAB
 
-      apply (set_eq A B).mp
+      apply (St.ext A B).mp
 
       intro x
 
       constructor
-      · /- mem x A -> mem x B -/
+      · /- St.mem x A -> St.mem x B -/
         exact (hAB x)
 
-      · /- mem x B -> mem x A -/
-        rw [mem_congr_right heqAC]
+      · /- St.mem x B -> St.mem x A -/
+        rw [St.mem_congr_right heqAC]
         exact (hBC x)
 
-theorem subset_uni_left (A X : St) :
-    subset A X → (uni A X =st X) := by
+theorem St.subset_uni_left (A X : St) :
+    St.subset A X → (St.uni A X =st X) := by
 
     intro h
-    replace h := (mem_subset A X).mp h
-    apply (set_eq (uni A X) X).mp
+    replace h := (St.mem_subset A X).mp h
+    apply (St.ext (St.uni A X) X).mp
     intro x
-    rw [mem_uni]
+    rw [St.mem_uni]
 
     constructor
     · intro hAorX
@@ -103,23 +109,23 @@ theorem subset_uni_left (A X : St) :
       right
       exact hX
 
-theorem subset_uni_right (A X : St) :
-    subset A X → (uni X A =st X) := by
+theorem St.subset_uni_right (A X : St) :
+    St.subset A X → (St.uni X A =st X) := by
 
     intro h
     calc
-      uni X A
-        =st uni A X := by apply uni_comm
+      St.uni X A
+        =st St.uni A X := by apply St.uni_comm
       _ =st X := by apply (subset_uni_left A X h)
 
-theorem subset_then_inter_left (A X : St) :
-    subset A X → (inter A X =st A) := by
+theorem St.subset_then_inter_left (A X : St) :
+    St.subset A X → (St.inter A X =st A) := by
 
     intro h
-    replace h := (mem_subset A X).mp h
-    apply (set_eq (inter A X) A).mp
+    replace h := (St.mem_subset A X).mp h
+    apply (St.ext (St.inter A X) A).mp
     intro x
-    rw [mem_inter]
+    rw [St.mem_inter]
 
     constructor
     · intro hAandX
@@ -131,24 +137,24 @@ theorem subset_then_inter_left (A X : St) :
       · have hX := h x hA
         exact hX
 
-theorem subset_then_inter_right (A X : St) :
-    subset A X → (inter X A =st A) := by
+theorem St.subset_then_inter_right (A X : St) :
+    St.subset A X → (St.inter X A =st A) := by
 
     intro h
     calc
-        inter X A
-            =st inter A X := by apply inter_comm
+        St.inter X A
+            =st St.inter A X := by apply St.inter_comm
         _   =st A := by apply (subset_then_inter_left A X h)
 
-theorem subset_then_diff_uni_left (A X : St) :
-    subset A X → (uni A (diff X A) =st X) := by
+theorem St.subset_then_diff_uni_left (A X : St) :
+    St.subset A X → (St.uni A (St.diff X A) =st X) := by
 
-    rw [mem_subset A X]
+    rw [St.mem_subset A X]
     intro h
-    apply (set_eq (uni A (diff X A)) X).mp
+    apply (St.ext (St.uni A (St.diff X A)) X).mp
     intro x
-    rw [mem_uni]
-    rw [mem_diff]
+    rw [St.mem_uni]
+    rw [St.mem_diff]
 
     constructor
     · intro h
@@ -158,7 +164,7 @@ theorem subset_then_diff_uni_left (A X : St) :
       · obtain ⟨hX, hneA⟩ := hXneA
         exact hX
     · intro hX
-      by_cases hA : mem x A
+      by_cases hA : St.mem x A
       · left
         exact hA
       · right
@@ -166,24 +172,24 @@ theorem subset_then_diff_uni_left (A X : St) :
         · exact hX
         · exact hA
 
-theorem subset_then_diff_uni_right (A X : St) :
-    subset A X → (uni (diff X A) A =st X) := by
+theorem St.subset_then_diff_uni_right (A X : St) :
+    St.subset A X → (St.uni (St.diff X A) A =st X) := by
 
     intro h
     calc
-        uni (diff X A) A
-            =st uni A (diff X A) := by apply uni_comm
+        St.uni (St.diff X A) A
+            =st St.uni A (St.diff X A) := by apply St.uni_comm
         _   =st X := by apply (subset_then_diff_uni_left A X h)
 
-theorem subset_then_diff_inter_left (A X : St) :
-    subset A X → (inter A (diff X A) =st empty) := by
+theorem St.subset_then_diff_inter_left (A X : St) :
+    St.subset A X → (St.inter A (St.diff X A) =st St.empty) := by
 
-    rw [mem_subset A X]
+    rw [St.mem_subset A X]
     intro h
-    apply (set_eq (inter A (diff X A)) empty).mp
+    apply (St.ext (St.inter A (St.diff X A)) St.empty).mp
     intro x
-    rw [mem_inter]
-    rw [mem_diff]
+    rw [St.mem_inter]
+    rw [St.mem_diff]
 
     constructor
     · intro h
@@ -198,37 +204,37 @@ theorem subset_then_diff_inter_left (A X : St) :
       exfalso
       exact h
 
-theorem subset_then_diff_inter_right (A X : St) :
-    subset A X → (inter (diff X A) A =st empty) := by
+theorem St.subset_then_diff_inter_right (A X : St) :
+    St.subset A X → (St.inter (St.diff X A) A =st St.empty) := by
 
     intro h
     calc
-        inter (diff X A) A
-            =st inter A (diff X A) := by apply inter_comm
-        _   =st empty := by apply (subset_then_diff_inter_left A X h)
+        St.inter (St.diff X A) A
+            =st St.inter A (St.diff X A) := by apply St.inter_comm
+        _   =st St.empty := by apply (subset_then_diff_inter_left A X h)
 
 
-theorem subset_demorgan_uni (X A B : St) :
-    diff X (uni A B) =st inter (diff X A) (diff X B) := by
+theorem St.subset_demorgan_uni (X A B : St) :
+    St.diff X (St.uni A B) =st St.inter (St.diff X A) (St.diff X B) := by
 
-    apply (set_eq (diff X (uni A B)) (inter (diff X A) (diff X B))).mp
+    apply (St.ext (St.diff X (St.uni A B)) (St.inter (St.diff X A) (St.diff X B))).mp
     intro x
 
-    rw [mem_diff]
-    rw [mem_uni]
-    rw [mem_inter]
-    rw [mem_diff]
-    rw [mem_diff]
+    rw [St.mem_diff]
+    rw [St.mem_uni]
+    rw [St.mem_inter]
+    rw [St.mem_diff]
+    rw [St.mem_diff]
 
     constructor
     · intro h
       obtain ⟨hX, hneAorB⟩ := h
-      by_cases hA : mem x A
+      by_cases hA : St.mem x A
       · exfalso
         apply hneAorB
         left
         exact hA
-      · by_cases hB : mem x B
+      · by_cases hB : St.mem x B
         · exfalso
           apply hneAorB
           right
@@ -254,22 +260,24 @@ theorem subset_demorgan_uni (X A B : St) :
         · apply hneB
           exact hB
 
-theorem subset_demorgan_inter (X A B : St) :
-    diff X (inter A B) =st uni (diff X A) (diff X B) := by
+theorem St.subset_demorgan_inter (X A B : St) :
+    St.diff X (St.inter A B) =st
+        St.uni (St.diff X A) (St.diff X B) := by
 
-    apply (set_eq (diff X (inter A B)) (uni (diff X A) (diff X B))).mp
+    apply (St.ext (St.diff X (St.inter A B))
+        (St.uni (St.diff X A) (St.diff X B))).mp
     intro x
 
-    rw [mem_diff]
-    rw [mem_inter]
-    rw [mem_uni]
-    rw [mem_diff]
-    rw [mem_diff]
+    rw [St.mem_diff]
+    rw [St.mem_inter]
+    rw [St.mem_uni]
+    rw [St.mem_diff]
+    rw [St.mem_diff]
 
     constructor
     · intro h
       obtain ⟨hX, hneAandB⟩ := h
-      by_cases hA : mem x A
+      by_cases hA : St.mem x A
       · right
         constructor
         · exact hX
@@ -301,70 +309,70 @@ theorem subset_demorgan_inter (X A B : St) :
           apply hneB
           exact hB
 
-theorem subset_congr_left {A B C : St} (h : A =st B) :
-  subset A C ↔ subset B C := by
+theorem St.subset_congr_left {A B C : St} (h : A =st B) :
+  St.subset A C ↔ St.subset B C := by
 
   constructor
-  · rw [mem_subset]
-    rw [mem_subset]
+  · rw [St.mem_subset]
+    rw [St.mem_subset]
     intro hsub x hx
-    rw [(mem_congr_right h).symm] at hx
+    rw [(St.mem_congr_right h).symm] at hx
     apply hsub x hx
 
-  · rw [mem_subset]
-    rw [mem_subset]
+  · rw [St.mem_subset]
+    rw [St.mem_subset]
     intro hsub x hx
-    rw [mem_congr_right h] at hx
+    rw [St.mem_congr_right h] at hx
     apply hsub x hx
 
-theorem subset_congr_right {A B C : St} (h : B =st C) :
-  subset A B ↔ subset A C := by
+theorem St.subset_congr_right {A B C : St} (h : B =st C) :
+  St.subset A B ↔ St.subset A C := by
 
   constructor
-  · rw [mem_subset]
-    rw [mem_subset]
+  · rw [St.mem_subset]
+    rw [St.mem_subset]
     intro hAB x hA
     have hB := hAB x hA
-    rw [mem_congr_right h] at hB
+    rw [St.mem_congr_right h] at hB
     exact hB
 
-  · rw [mem_subset]
-    rw [mem_subset]
+  · rw [St.mem_subset]
+    rw [St.mem_subset]
     intro hAC x hA
     have hC := hAC x hA
-    rw [(mem_congr_right h).symm] at hC
+    rw [(St.mem_congr_right h).symm] at hC
     exact hC
 
 
-/- Subset subproperties -/
+/- St.subset subproperties -/
 
 
-theorem uni_then_subset {A B : St} (h : uni A B =st B) :
-    subset A B := by
+theorem St.uni_then_subset {A B : St} (h : St.uni A B =st B) :
+    St.subset A B := by
 
-    apply (mem_subset A B).mpr
+    apply (St.mem_subset A B).mpr
     intro x
 
-    replace h := (set_eq (uni A B) B).mpr h x
-    rw [mem_uni] at h
+    replace h := (St.ext (St.uni A B) B).mpr h x
+    rw [St.mem_uni] at h
 
     intro hA
 
-    have hAorB : mem x A ∨ mem x B := by
+    have hAorB : St.mem x A ∨ St.mem x B := by
         left
         exact hA
 
     replace h := h.mp hAorB
     exact h
 
-theorem inter_then_subset {A B : St} (h : inter A B =st A) :
-    subset A B := by
+theorem St.inter_then_subset {A B : St} (h : St.inter A B =st A) :
+    St.subset A B := by
 
-    apply (mem_subset A B).mpr
+    apply (St.mem_subset A B).mpr
     intro x
 
-    replace h := (set_eq (inter A B) A).mpr h x
-    rw [mem_inter] at h
+    replace h := (St.ext (St.inter A B) A).mpr h x
+    rw [St.mem_inter] at h
 
     intro hA
 
@@ -374,19 +382,19 @@ theorem inter_then_subset {A B : St} (h : inter A B =st A) :
 
     exact hB
 
-theorem uni_great_eq_inter_less (A B : St) :
-    (uni A B =st B) ↔ (inter A B =st A) := by
+theorem St.uni_great_eq_inter_less (A B : St) :
+    (St.uni A B =st B) ↔ (St.inter A B =st A) := by
 
     constructor
     · intro hAuniB
-      apply (set_eq (inter A B) A).mp
+      apply (St.ext (St.inter A B) A).mp
 
       intro x
 
-      rw [mem_inter A B x]
+      rw [St.mem_inter A B x]
 
-      replace hAuniB := (set_eq (uni A B) B).mpr hAuniB x
-      rw [mem_uni A B x] at hAuniB
+      replace hAuniB := (St.ext (St.uni A B) B).mpr hAuniB x
+      rw [St.mem_uni A B x] at hAuniB
 
       constructor
       · intro hAandB
@@ -394,7 +402,7 @@ theorem uni_great_eq_inter_less (A B : St) :
         exact hA
       · intro hA
 
-        have hAorB : mem x A ∨ mem x B := by
+        have hAorB : St.mem x A ∨ St.mem x B := by
             left
             exact hA
 
@@ -402,14 +410,14 @@ theorem uni_great_eq_inter_less (A B : St) :
         exact ⟨hA, hB⟩
 
     · intro hAinterB
-      apply (set_eq (uni A B) B).mp
+      apply (St.ext (St.uni A B) B).mp
 
       intro x
 
-      rw [mem_uni A B x]
+      rw [St.mem_uni A B x]
 
-      replace hAinterB := (set_eq (inter A B) A).mpr hAinterB x
-      rw [mem_inter A B x] at hAinterB
+      replace hAinterB := (St.ext (St.inter A B) A).mpr hAinterB x
+      rw [St.mem_inter A B x] at hAinterB
 
       constructor
       · intro hAorB
@@ -422,77 +430,85 @@ theorem uni_great_eq_inter_less (A B : St) :
         right
         exact hB
 
-theorem inter_less_subset_left (A B : St) : subset (inter A B) A := by
-    apply (mem_subset (inter A B) A).mpr
+theorem St.inter_less_subset_left (A B : St) :
+    St.subset (St.inter A B) A := by
+
+    apply (St.mem_subset (St.inter A B) A).mpr
     intro x
 
-    rw [mem_inter]
+    rw [St.mem_inter]
     intro hAandB
     obtain ⟨hA, hB⟩ := hAandB
     exact hA
 
 
-theorem inter_less_subset_right (A B : St) : subset (inter A B) B := by
-    rw [subset_congr_left (inter_comm A B)]
+theorem St.inter_less_subset_right (A B : St) :
+    St.subset (St.inter A B) B := by
+
+    rw [St.subset_congr_left (St.inter_comm A B)]
     apply inter_less_subset_left
 
-theorem subset_and_subset_eq_subset_inter (A B C : St) :
-    subset C A ∧ subset C B ↔ subset C (inter A B) := by
+theorem St.subset_and_subSt.set_eq_subset_inter (A B C : St) :
+    St.subset C A ∧ St.subset C B ↔ St.subset C (St.inter A B) := by
 
     constructor
     · intro hCAandCB
       obtain ⟨hCA, hCB⟩ := hCAandCB
-      replace hCA := (mem_subset C A).mp hCA
-      replace hCB := (mem_subset C B).mp hCB
-      apply (mem_subset C (inter A B)).mpr
+      replace hCA := (St.mem_subset C A).mp hCA
+      replace hCB := (St.mem_subset C B).mp hCB
+      apply (St.mem_subset C (St.inter A B)).mpr
       intro x hC
-      apply (mem_inter A B x).mpr
+      apply (St.mem_inter A B x).mpr
       have hA := hCA x hC
       have hB := hCB x hC
       exact ⟨hA, hB⟩
 
     · intro hCinterAB
-      replace hCinterAB := (mem_subset C (inter A B)).mp hCinterAB
+      replace hCinterAB := (St.mem_subset C (St.inter A B)).mp hCinterAB
 
       constructor
-      · apply (mem_subset C A).mpr
+      · apply (St.mem_subset C A).mpr
         intro x hC
         have hAandB := hCinterAB x hC
-        replace hAandB := (mem_inter A B x).mp hAandB
+        replace hAandB := (St.mem_inter A B x).mp hAandB
         obtain ⟨hA, hB⟩ := hAandB
         exact hA
 
-      · apply (mem_subset C B).mpr
+      · apply (St.mem_subset C B).mpr
         intro x hC
         have hAandB := hCinterAB x hC
-        replace hAandB := (mem_inter A B x).mp hAandB
+        replace hAandB := (St.mem_inter A B x).mp hAandB
         obtain ⟨hA, hB⟩ := hAandB
         exact hB
 
 
-theorem subset_of_uni_left (A B : St) : subset A (uni A B) := by
-    apply (mem_subset A (uni A B)).mpr
+theorem St.subset_of_uni_left (A B : St) :
+    St.subset A (St.uni A B) := by
+
+    apply (St.mem_subset A (St.uni A B)).mpr
     intro x hA
-    apply (mem_uni A B x).mpr
+    apply (St.mem_uni A B x).mpr
     left
     exact hA
 
-theorem subset_of_uni_right (A B : St) : subset B (uni A B) := by
-    rw [subset_congr_right (uni_comm A B)]
+theorem St.subset_of_uni_right (A B : St) :
+    St.subset B (St.uni A B) := by
+
+    rw [subset_congr_right (St.uni_comm A B)]
     apply subset_of_uni_left B A
 
 
-theorem subset_and_subset_eq_subset_uni (A B C : St) :
-    subset A C ∧ subset B C ↔ subset (uni A B) C := by
+theorem St.subset_and_subSt.set_eq_subset_uni (A B C : St) :
+    St.subset A C ∧ St.subset B C ↔ St.subset (St.uni A B) C := by
 
     constructor
     · intro hACandBC
       obtain ⟨hAC, hBC⟩ := hACandBC
-      replace hAC := (mem_subset A C).mp hAC
-      replace hBC := (mem_subset B C).mp hBC
-      apply (mem_subset (uni A B) C).mpr
+      replace hAC := (St.mem_subset A C).mp hAC
+      replace hBC := (St.mem_subset B C).mp hBC
+      apply (St.mem_subset (St.uni A B) C).mpr
       intro x hAorB
-      replace hAorB := (mem_uni A B x).mp hAorB
+      replace hAorB := (St.mem_uni A B x).mp hAorB
       rcases hAorB with hA | hB
       · have hC := hAC x hA
         exact hC
@@ -500,108 +516,112 @@ theorem subset_and_subset_eq_subset_uni (A B C : St) :
         exact hC
     · intro huniABC
       constructor
-      · apply (mem_subset A C).mpr
+      · apply (St.mem_subset A C).mpr
         intro x hA
-        replace huniABC := (mem_subset (uni A B) C).mp huniABC
+        replace huniABC := (St.mem_subset (St.uni A B) C).mp huniABC
         replace huniABC := huniABC x
-        have hAorB : mem x (uni A B) := by
-          apply (mem_uni A B x).mpr
+        have hAorB : St.mem x (St.uni A B) := by
+          apply (St.mem_uni A B x).mpr
           left
           exact hA
         have hC := huniABC hAorB
         exact hC
-      · apply (mem_subset B C).mpr
+      · apply (St.mem_subset B C).mpr
         intro x hB
-        replace huniABC := (mem_subset (uni A B) C).mp huniABC
+        replace huniABC := (St.mem_subset (St.uni A B) C).mp huniABC
         replace huniABC := huniABC x
-        have hAorB : mem x (uni A B) := by
-          apply (mem_uni A B x).mpr
+        have hAorB : St.mem x (St.uni A B) := by
+          apply (St.mem_uni A B x).mpr
           right
           exact hB
         have hC := huniABC hAorB
         exact hC
 
 
-theorem absortion_inter_uni (A B : St) : inter A (uni A B) =st A := by
+theorem St.absortion_inter_uni (A B : St) :
+    St.inter A (St.uni A B) =st A := by
 
-    apply (set_eq (inter A (uni A B)) A).mp
+    apply (St.ext (St.inter A (St.uni A B)) A).mp
     intro x
     constructor
     · intro h
-      replace h := (mem_inter A (uni A B) x).mp h
+      replace h := (St.mem_inter A (St.uni A B) x).mp h
       obtain ⟨hA, hAuniB⟩ := h
       exact hA
 
     · intro hA
-      apply (mem_inter A (uni A B) x).mpr
+      apply (St.mem_inter A (St.uni A B) x).mpr
       constructor
       · exact hA
-      · apply (mem_uni A B x).mpr
+      · apply (St.mem_uni A B x).mpr
         left
         exact hA
 
-theorem absortion_uni_inter (A B : St) : uni A (inter A B) =st A := by
+theorem St.absortion_uni_inter (A B : St) :
+    St.uni A (St.inter A B) =st A := by
 
-    apply (set_eq (uni A (inter A B)) A).mp
+    apply (St.ext (St.uni A (St.inter A B)) A).mp
     intro x
     constructor
     · intro h
-      replace h := (mem_uni A (inter A B) x).mp h
+      replace h := (St.mem_uni A (St.inter A B) x).mp h
       rcases h with hA | hinterAB
       · exact hA
-      · replace hinterAB := (mem_inter A B x).mp hinterAB
+      · replace hinterAB := (St.mem_inter A B x).mp hinterAB
         obtain ⟨hA, hB⟩ := hinterAB
         exact hA
 
     · intro hA
-      apply (mem_uni A (inter A B) x).mpr
+      apply (St.mem_uni A (St.inter A B) x).mpr
       left
       exact hA
 
-theorem void_intersection_union_diffs (A B X : St) :
-    (uni A B =st X) → (inter A B =st empty) →
-    (A =st diff X B) ∧ (B =st diff X A) := by
+theorem St.void_intersection_union_diffs (A B X : St) :
+    (St.uni A B =st X) → (St.inter A B =st St.empty) →
+    (A =st St.diff X B) ∧ (B =st St.diff X A) := by
 
-    have h {A B X : St} (huniAB : uni A B =st X)
-      (hinterAB : inter A B =st empty) : (A =st diff X B) := by
+    have h {A B X : St} (huniAB : St.uni A B =st X)
+      (hinterAB : St.inter A B =st St.empty) : (A =st St.diff X B) := by
 
-      replace huniAB := (set_eq (uni A B) X).mpr huniAB
-      replace hinterAB := (set_eq (inter A B) empty).mpr hinterAB
+      replace huniAB := (St.ext (St.uni A B) X).mpr huniAB
+      replace hinterAB :=
+        (St.ext (St.inter A B) St.empty).mpr hinterAB
 
-      apply (set_eq A (diff X B)).mp
+      apply (St.ext A (St.diff X B)).mp
       intro x
 
       constructor
       · intro hA
-        apply (mem_diff X B x).mpr
+        apply (St.mem_diff X B x).mpr
 
         constructor
-        · have hxuniAB : mem x (uni A B) := by
-            apply (mem_uni A B x).mpr
+        · have hxuniAB : St.mem x (St.uni A B) := by
+            apply (St.mem_uni A B x).mpr
             left
             exact hA
-          have hX : mem x X := (huniAB x).mp hxuniAB
+          have hX : St.mem x X := (huniAB x).mp hxuniAB
           exact hX
 
-        · have hxneinterAB : mem x (inter A B) → False := by
+        · have hxneinterAB : St.mem x (St.inter A B) → False := by
             intro hxinterAB
             apply (mem_empty x).mp
-            have hxempty : mem x empty := (hinterAB x).mp hxinterAB
+            have hxempty : St.mem x St.empty :=
+                (hinterAB x).mp hxinterAB
             exact hxempty
-          have hneB : mem x B → False := by
+          have hneB : St.mem x B → False := by
             intro hB
-            have hxAandB : mem x (inter A B) := by
-              apply (mem_inter A B x).mpr
+            have hxAandB : St.mem x (St.inter A B) := by
+              apply (St.mem_inter A B x).mpr
               exact ⟨hA, hB⟩
 
             apply (hxneinterAB hxAandB)
           exact hneB
 
       · intro hxdiffXB
-        have hXandneB := (mem_diff X B x).mp hxdiffXB
+        have hXandneB := (St.mem_diff X B x).mp hxdiffXB
         obtain ⟨hX, hneB⟩ := hXandneB
         replace huniAB := (huniAB x).mpr hX
-        have hAorB := (mem_uni A B x).mp huniAB
+        have hAorB := (St.mem_uni A B x).mp huniAB
         rcases hAorB with hA | hB
         · exact hA
         · exfalso
@@ -612,33 +632,33 @@ theorem void_intersection_union_diffs (A B X : St) :
 
     constructor
     · apply (h huniAB hinterAB)
-    · have huniBA : uni B A =st X := by
+    · have huniBA : St.uni B A =st X := by
         calc
-            uni B A
-                =st uni A B := by apply uni_comm
+            St.uni B A
+                =st St.uni A B := by apply St.uni_comm
             _   =st X := by apply huniAB
-      have hinterBA : inter B A =st empty := by
+      have hinterBA : St.inter B A =st St.empty := by
         calc
-            inter B A
-                =st inter A B := by apply inter_comm
-            _   =st empty := by apply hinterAB
+            St.inter B A
+                =st St.inter A B := by apply St.inter_comm
+            _   =st St.empty := by apply hinterAB
       apply (h huniBA hinterBA)
 
 
-theorem diff_inter_disjoint (A B : St) :
-    inter (diff A B) (inter A B) =st empty := by
+theorem St.diff_inter_disjoint (A B : St) :
+    St.inter (St.diff A B) (St.inter A B) =st St.empty := by
 
-    apply (set_eq (inter (diff A B) (inter A B)) empty).mp
+    apply (St.ext (St.inter (St.diff A B) (St.inter A B)) St.empty).mp
     intro x
     constructor
     · intro h
-      replace h := (mem_inter (diff A B) (inter A B) x).mp h
+      replace h := (St.mem_inter (St.diff A B) (St.inter A B) x).mp h
       obtain ⟨hdiffAB, hinterAB⟩ := h
 
-      replace hdiffAB := (mem_diff A B x).mp hdiffAB
+      replace hdiffAB := (St.mem_diff A B x).mp hdiffAB
       obtain ⟨hA, hneB⟩ := hdiffAB
 
-      replace hinterAB := (mem_inter A B x).mp hinterAB
+      replace hinterAB := (St.mem_inter A B x).mp hinterAB
       obtain ⟨hA, hB⟩ := hinterAB
 
       exfalso
@@ -651,20 +671,20 @@ theorem diff_inter_disjoint (A B : St) :
       exact hempty
 
 
-theorem diffs_disjoint (A B : St) :
-    inter (diff A B) (diff B A) =st empty := by
+theorem St.diffs_disjoint (A B : St) :
+    St.inter (St.diff A B) (St.diff B A) =st St.empty := by
 
-    apply (set_eq (inter (diff A B) (diff B A)) empty).mp
+    apply (St.ext (St.inter (St.diff A B) (St.diff B A)) St.empty).mp
     intro x
     constructor
     · intro h
-      replace h := (mem_inter (diff A B) (diff B A) x).mp h
+      replace h := (St.mem_inter (St.diff A B) (St.diff B A) x).mp h
       obtain ⟨hdiffAB, hdiffBA⟩ := h
 
-      replace hdiffBA := (mem_diff B A x).mp hdiffBA
+      replace hdiffBA := (St.mem_diff B A x).mp hdiffBA
       obtain ⟨hB, hneA⟩ := hdiffBA
 
-      replace hdiffAB := (mem_diff A B x).mp hdiffAB
+      replace hdiffAB := (St.mem_diff A B x).mp hdiffAB
       obtain ⟨hA, hneB⟩ := hdiffAB
 
       exfalso
@@ -676,65 +696,72 @@ theorem diffs_disjoint (A B : St) :
       apply (mem_empty x).mp
       exact hempty
 
-theorem diffs_inter_union :
-    uni (uni (diff A B) (diff B A)) (inter A B) =st uni A B := by
+theorem St.diffs_inter_union :
+    St.uni (St.uni (St.diff A B) (St.diff B A))
+        (St.inter A B) =st St.uni A B := by
 
-    apply (set_eq (uni (uni (diff A B) (diff B A)) (inter A B))
-        (uni A B)).mp
+    apply (St.ext (St.uni (St.uni (St.diff A B) (St.diff B A))
+            (St.inter A B))
+        (St.uni A B)).mp
     intro x
 
     constructor
     · intro h
-      apply (mem_uni A B x).mpr
+      apply (St.mem_uni A B x).mpr
 
       replace h :=
-        (mem_uni (uni (diff A B) (diff B A)) (inter A B) x).mp h
+        (St.mem_uni (St.uni (St.diff A B) (St.diff B A))
+            (St.inter A B) x).mp h
+
       rcases h with hdiff | hinter
 
-      · replace hdiff := (mem_uni (diff A B) (diff B A) x).mp hdiff
+      · replace hdiff := (St.mem_uni (St.diff A B)
+        (St.diff B A) x).mp hdiff
+
         rcases hdiff with hdiffAB | hdiffBA
-        · replace hdiffAB := (mem_diff A B x).mp hdiffAB
+        · replace hdiffAB := (St.mem_diff A B x).mp hdiffAB
           obtain ⟨hA, hneB⟩ := hdiffAB
           left
           exact hA
-        · replace hdiffBA := (mem_diff B A x).mp hdiffBA
+        · replace hdiffBA := (St.mem_diff B A x).mp hdiffBA
           obtain ⟨hB, hneA⟩ := hdiffBA
           right
           exact hB
 
 
-      · replace hinter := (mem_inter A B x).mp hinter
+      · replace hinter := (St.mem_inter A B x).mp hinter
         obtain ⟨hA, hB⟩ := hinter
         left
         exact hA
 
     · intro h
-      replace h := (mem_uni A B x).mp h
-      apply (mem_uni (uni (diff A B) (diff B A)) (inter A B) x).mpr
+      replace h := (St.mem_uni A B x).mp h
+      apply (St.mem_uni (St.uni (St.diff A B) (St.diff B A))
+        (St.inter A B) x).mpr
       rcases h with hA | hB
-      · by_cases hB : mem x B
+      · by_cases hB : St.mem x B
         · right
-          apply (mem_inter A B x).mpr
+          apply (St.mem_inter A B x).mpr
           constructor
           · exact hA
           · exact hB
         · left
-          apply (mem_uni (diff A B) (diff B A) x).mpr
+          apply (St.mem_uni (St.diff A B) (St.diff B A) x).mpr
           left
-          apply (mem_diff A B x).mpr
+          apply (St.mem_diff A B x).mpr
           constructor
           · exact hA
           · exact hB
-      · by_cases hA : mem x A
+      · by_cases hA : St.mem x A
         · right
-          apply (mem_inter A B x).mpr
+          apply (St.mem_inter A B x).mpr
           constructor
           · exact hA
           · exact hB
         · left
-          apply (mem_uni (diff A B) (diff B A) x).mpr
+          apply (St.mem_uni (St.diff A B) (St.diff B A) x).mpr
           right
-          apply (mem_diff B A x).mpr
+          apply (St.mem_diff B A x).mpr
           constructor
           · exact hB
           · exact hA
